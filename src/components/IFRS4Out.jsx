@@ -56,8 +56,7 @@ const IFRS4Out = ({
     const netWrittenContributions = premiumsCeded.map((val, i ) => grossWrittenPremiums[i] - val );
 
     const allocationCharges = calculateFromSameFinancialRow('AllocationChargeAmount');
-    console.log( "this is the npv forallocation charges",calculateNPV(0.05, allocationCharges))
-
+    
 
     const adminFee = calculateFromSameFinancialRow('AdminFee');
     const coi = calculateFromSameFinancialRow('COI');
@@ -176,35 +175,31 @@ const IFRS4Out = ({
         return np - z - wht - phs;
 
     })
-    console.log("NPV Input Debug:", netProfitAfterZakat.map((val, i) => [i, val, typeof val, isNaN(val)]));
+
 
     const pvZakat = calculateNPV( 0.06, zakat )
     const pvnp = calculateNPV( 0.06, netProfit) ;
     const pvwht = calculateNPV( 0.06 , whtOnVendorPayouts)
     const pvphs = calculateNPV( 0.06, policyHolderSurplus) 
-    console.log("📊 Present Value of Zakat at 6% discount rate:", pvZakat);
-    console.log("💰 Present Value of Net Profit at 6% discount rate:", pvnp);
-    console.log("📦 Present Value of WHT on Vendor Payouts at 6% discount rate:", pvwht);
-    console.log("🧾 Present Value of PHS at 6% discount rate:", pvphs);
+    
 
 
-const npvPremiumsAt6Percent = calculateNPV(formData.riskDiscountRate/ 100, grossWrittenPremiums) * (1 + formData.riskDiscountRate / 100);
+const npvPremiumsAt6Percent = calculateNPV((formData.flatInvestmentIncomeRate + 1)/100, grossWrittenPremiums) * (1 + (formData.flatInvestmentIncomeRate + 1)/100);
 let checkNpcpremium = [];
  
         try {
           // Use the library's IRR function. The spread operator (...) is important
-          checkNpcpremium = npv(formData.riskDiscountRate/ 100, grossWrittenPremiums) ; // The result is already a percentage value from this library
+          checkNpcpremium = npv((formData.flatInvestmentIncomeRate + 1)/100, grossWrittenPremiums) ; // The result is already a percentage value from this library
         } catch (e) {
-          console.error("Could not calculate Policyholder IRR:", e);
+         
           checkNpcpremium = NaN; // Set to NaN if calculation fails
         }
 
-        console.log(`this is my check npv : ${(checkNpcpremium).toFixed(2)}%`);  
-        console.log(`this is is the rate : ${formData.riskDiscountRate}`) 
+       
 
 
 //ask about this later --- dont forhettttt
-const npvProfitAt6Percent = Math.max ( calculateNPV(formData.riskDiscountRate/100, netProfitAfterZakat), 0 ); 
+const npvProfitAt6Percent = Math.max ( calculateNPV((formData.flatInvestmentIncomeRate + 1)/100, netProfitAfterZakat), 0 ); 
 
 const profitMargin = (npvProfitAt6Percent / npvPremiumsAt6Percent ) * 100; 
 
@@ -231,19 +226,10 @@ const policyHolderIrrCashflow = grossWrittenPremiums.map((gwp, index) => {
 
         //calculate  the vendor profit - take the npv at 5 % -- hardcoded 
         const vendorProfit =  
-        calculateNPV(0.05 , premiumsCeded ) -
-        calculateNPV( 0.05 , reinsuranceShare )+
-        calculateNPV( 0.05, vendorCommission )+
-        calculateNPV( 0.05 , vendorFixedFee) // dsiplayed 
-
-
-        console.log( " this is the pv for the venfor profit " , vendorProfit)
-        console.log("📘 PV Breakdown at 5% discount rate:");
-        console.log("• Premiums Ceded:", calculateNPV(0.05 , premiumsCeded ) );
-        console.log("• Reinsurance Share:", calculateNPV( 0.05 , reinsuranceShare ));
-        console.log("• Vendor Commission:", calculateNPV( 0.05, vendorCommission));
-        console.log("• Vendor Fixed Fee:", calculateNPV( 0.05 , vendorFixedFee));
-        
+        calculateNPV(formData.flatInvestmentIncomeRate/ 100 , premiumsCeded ) -
+        calculateNPV( formData.flatInvestmentIncomeRate/ 100 , reinsuranceShare )+
+        calculateNPV( formData.flatInvestmentIncomeRate/ 100, vendorCommission )+
+        calculateNPV( formData.flatInvestmentIncomeRate/ 100 , vendorFixedFee) // dsiplayed 
 
         const SAICOProfit = npvProfitAt6Percent; // displayed 
         
@@ -267,110 +253,57 @@ const policyHolderIrrCashflow = grossWrittenPremiums.map((gwp, index) => {
           costToCompanyIrr = NaN; // Set to NaN if calculation fails
         }
 
-        console.log(`this is my IRR: ${(costToCompanyIrr).toFixed(2)}%`); 
+        
 
        
        const shareholderIrr = 5 - costToCompanyIrr;  // displayed 
 
 
-       // -----------------------------------------------------------------------------------------------------------------------------------------------------------------chart data - calculate npvs 
+       // --------------------------------------------------------------------------------------------------------chart data - calculate npvs - calculated at 5% 
+
        const PVCharges = 
-       (calculateNPV( 0.05 , allocationCharges) + 
-       calculateNPV( 0.05, adminFee)+
-       calculateNPV( 0.05, fundManagementCharges) +
-       calculateNPV( 0.05 , coi) +
-       calculateNPV( 0.05 , surrenderCharges) ) 
+       (calculateNPV( formData.flatInvestmentIncomeRate/ 100 , allocationCharges) + 
+       calculateNPV(formData.flatInvestmentIncomeRate/ 100, adminFee)+
+       calculateNPV( formData.flatInvestmentIncomeRate/ 100, fundManagementCharges) +
+       calculateNPV( formData.flatInvestmentIncomeRate/ 100 , coi) +
+       calculateNPV( formData.flatInvestmentIncomeRate/ 100 , surrenderCharges) ) 
 
-       console.log( "this is the pv charges" , PVCharges)
-
-       const pvLoyaltyBonus = calculateNPV( 0.05 , loyaltyBonus);
-       console.log( " this is the pv for loyalty bonus" , pvLoyaltyBonus);
-
-       const pvsalescommission = calculateNPV( 0.05 ,initialCommission ) + calculateNPV( 0.05 , renewalCommission);
-       console.log( " this is the pv for pv sales commission" , pvsalescommission);
-
-       const pvacqexpenses = calculateNPV(0.05, acquisitionExpenses);
-      console.log('Present Value of Acquisition Expenses:', pvacqexpenses);
-
-      const pvmainexpesn = calculateNPV(0.05, maintenanceExpenses);
-      console.log('Present Value of Maintenance Expenses:', pvmainexpesn);
-
-      const pvfundManagementExpense = calculateNPV(0.05, fundManagementExpense);
-      console.log('Present Value of Fund Management Expense:', pvfundManagementExpense);
-    
+       const pvLoyaltyBonus = calculateNPV(formData.flatInvestmentIncomeRate/ 100 , loyaltyBonus);
+       const pvsalescommission = calculateNPV( formData.flatInvestmentIncomeRate/ 100 ,initialCommission ) + calculateNPV( formData.flatInvestmentIncomeRate/ 100 , renewalCommission);
+       const pvacqexpenses = calculateNPV(formData.flatInvestmentIncomeRate/ 100, acquisitionExpenses);
+      const pvmainexpesn = calculateNPV(formData.flatInvestmentIncomeRate/ 100, maintenanceExpenses);
+      const pvfundManagementExpense = calculateNPV(formData.flatInvestmentIncomeRate/ 100, fundManagementExpense);
       const pvtotalExpenses = pvacqexpenses+ pvmainexpesn+pvfundManagementExpense;
-
-      const pvceded = calculateNPV(0.05, premiumsCeded);
-      console.log('Present Value of Premiums Ceded:', pvceded);
-
-      const pvgrossClaims = calculateNPV(0.05, grossDeathRiderClaimsNonUnit);
-      console.log('Present Value of Gross Death Rider Claims (Non-Unit):', pvgrossClaims);
-
-      const pvrirecovery = calculateNPV(0.05, reinsuranceShare);
-      console.log('Present Value of Reinsurance Share Recovery:', pvrirecovery);
-
-      const pvvendorCom = calculateNPV(0.05, vendorCommission) + calculateNPV(0.05, vendorFixedFee);
-      console.log('Present Value of Vendor Commission and Fixed Fee:', pvvendorCom);
-
-      const pvzakat = calculateNPV(0.05, zakat);
-      console.log('Present Value of Zakat:', pvzakat);
-
-      const pvpolicyHolderSurplus = calculateNPV(0.05, policyHolderSurplus);
-      console.log('Present Value of Policy Holder Surplus:', pvpolicyHolderSurplus);
-
+      const pvceded = calculateNPV(formData.flatInvestmentIncomeRate/ 100, premiumsCeded);
+      const pvgrossClaims = calculateNPV(formData.flatInvestmentIncomeRate/ 100, grossDeathRiderClaimsNonUnit);
+      const pvrirecovery = calculateNPV(formData.flatInvestmentIncomeRate/ 100, reinsuranceShare);
+      const pvvendorCom = calculateNPV(formData.flatInvestmentIncomeRate/ 100, vendorCommission) + calculateNPV(formData.flatInvestmentIncomeRate/ 100, vendorFixedFee);
+      const pvzakat = calculateNPV(formData.flatInvestmentIncomeRate/ 100, zakat);
+      const pvpolicyHolderSurplus = calculateNPV(formData.flatInvestmentIncomeRate/ 100, policyHolderSurplus);
       const pvnetprofit  = PVCharges - ( pvLoyaltyBonus +
         pvsalescommission + pvacqexpenses + pvmainexpesn+ pvfundManagementExpense + 
       pvceded + pvgrossClaims + pvvendorCom  +
        pvzakat +pvpolicyHolderSurplus ) + pvrirecovery;
+
+      const costOfReserves  = pvnetprofit - npvProfitAt6Percent;
+      console.log( " this is the cost of reserves", costOfReserves)
       
-      console.log( " this is for net profit 5 % " , pvnetprofit)
-
       const ratioofprofits  = npvProfitAt6Percent / pvnetprofit ;
-      console.log ( "ratio ", ratioofprofits);
-
-
 const finalpvcharges = ratioofprofits * PVCharges / 1000000;
-console.log("this is the final pv charges adjusted", finalpvcharges);
-
-
 const finalpvLoyaltyBonus = ratioofprofits * pvLoyaltyBonus / 1000000;
-console.log("adjusted pv Loyalty Bonus", finalpvLoyaltyBonus);
-
-
 const finalpvsalescommission = ratioofprofits * pvsalescommission / 1000000;
-console.log("adjusted pv Sales Commission", finalpvsalescommission);
-
-
 const finalpvtotalExpenses = ratioofprofits * pvtotalExpenses / 1000000;
-console.log("adjusted pv Total Expenses", finalpvtotalExpenses);
-
 const finalpvacqexpenses = ratioofprofits* pvacqexpenses / 1000000
 const finalpvmainexp = ratioofprofits*pvmainexpesn / 1000000
 const finalpvfundexpense = ratioofprofits* pvfundManagementExpense / 1000000;
-
-
-
 const finalpvceded = ratioofprofits * pvceded / 1000000;
-console.log("adjusted pv Premiums Ceded", finalpvceded);
-
-
 const finalpvgrossClaims = ratioofprofits * pvgrossClaims / 1000000;
-console.log("adjusted pv Gross Death Rider Claims", finalpvgrossClaims);
-
 const finalpvrirecovery = ratioofprofits * pvrirecovery / 1000000;
-console.log("adjusted pv Reinsurance Share Recovery", finalpvrirecovery);
-
-
 const finalpvvendorCom = ratioofprofits * pvvendorCom / 1000000;
-console.log("adjusted pv Vendor Commission and Fee", finalpvvendorCom);
-
-
 const finalpvzakat = ratioofprofits * pvzakat / 1000000;
-console.log("adjusted pv Zakat", finalpvzakat);
-
-
 const finalpvpolicyHolderSurplus = ratioofprofits * pvpolicyHolderSurplus / 1000000;
-console.log("adjusted pv Policy Holder Surplus", finalpvpolicyHolderSurplus);
+const finalpvcostOfReserves = ratioofprofits * costOfReserves/ 1000000;
+
 
 const finalpvnetprofit = finalpvcharges - (
   finalpvLoyaltyBonus +
@@ -380,10 +313,10 @@ const finalpvnetprofit = finalpvcharges - (
   finalpvgrossClaims+
   finalpvvendorCom + 
   finalpvzakat +
-  finalpvpolicyHolderSurplus
+  finalpvpolicyHolderSurplus+
+  finalpvcostOfReserves
   ) + finalpvrirecovery;
 
-  console.log("final pv profit " , finalpvnetprofit);
 
  const waterfallChartData = [
   { name: "Premiums", value: finalpvcharges },
@@ -396,6 +329,7 @@ const finalpvnetprofit = finalpvcharges - (
   { name: "Vendor Commissions", value: -finalpvvendorCom },
   { name: "Zakat", value: -finalpvzakat },
   { name: "Policyholder Surplus", value: -finalpvpolicyHolderSurplus },
+  { name: "Cost Of Reserves", value: -finalpvcostOfReserves },
   { name: "Net Profit", value: finalpvnetprofit, isTotal: true } // Optional: mark final row as "total"
 ];
 
@@ -403,14 +337,15 @@ const pieChartData = [
   { name: "Direct Expenses" , value : finalpvacqexpenses},
   { name: "Indirect Expenses", value : finalpvmainexp} ,
   { name: "Investment Expenses", value : finalpvfundexpense}
-
 ]
 
-const pvAllocationCharges = calculateNPV(0.05, allocationCharges);
-const pvAdminFee = calculateNPV(0.05, adminFee);
-const pvFundManagementCharges = calculateNPV(0.05, fundManagementCharges);
-const pvCOI = calculateNPV(0.05, coi);
-const pvSurrenderCharges = calculateNPV(0.05, surrenderCharges);
+
+
+const pvAllocationCharges = calculateNPV(formData.flatInvestmentIncomeRate/ 100, allocationCharges);
+const pvAdminFee = calculateNPV(formData.flatInvestmentIncomeRate/ 100, adminFee);
+const pvFundManagementCharges = calculateNPV(formData.flatInvestmentIncomeRate/ 100, fundManagementCharges);
+const pvCOI = calculateNPV(formData.flatInvestmentIncomeRate/ 100, coi);
+const pvSurrenderCharges = calculateNPV(formData.flatInvestmentIncomeRate/ 100, surrenderCharges);
 
 const finalpvAllocationCharges = ratioofprofits * pvAllocationCharges / 1000000;
 const finalpvAdminFee = ratioofprofits * pvAdminFee / 1000000;
@@ -426,7 +361,6 @@ const pvChargeBreakdown = [
   { name: "Surrender Charges", value: finalpvSurrenderCharges }
 ];
 
-console.log("Breakdown of Final PV Charges:", pvChargeBreakdown);
 
 
     return {
@@ -463,11 +397,41 @@ console.log("Breakdown of Final PV Charges:", pvChargeBreakdown);
   const [expandedSections, setExpandedSections] = useState({});
 
   const formatNumber = (num) => {
+  // Return a placeholder if the input isn't a valid number
+  if (typeof num !== 'number' || isNaN(num)) {
+    return '-';
+  }
+
+  // Check if the number is negative
+  if (num < 0) {
+    // Format the absolute value and wrap it in parentheses
+    const formattedValue = Math.abs(num).toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    });
+    return `(${formattedValue})`;
+  }
+
+  // Format positive numbers and zero as before
+  return num.toLocaleString(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+};
+
+
+   const formatPercent = (num, decimal) => {
     if (typeof num !== 'number') return '-';
-    return num.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-  };
-  const formatPercent = (num, decimal) => {
-    if (typeof num !== 'number') return '-';
+    // Check if the number is negative
+  if (num < 0) {
+    // Format the absolute value and wrap it in parentheses
+    const formattedValue = Math.abs(num).toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    });
+    return `(${formattedValue})`;
+  }
+
     return num.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: decimal });
   };
 
@@ -654,9 +618,9 @@ console.log("Breakdown of Final PV Charges:", pvChargeBreakdown);
   const tableOtherCharges = [
     {
       type: 'summary',
-      key : 'emptyArray',
+      key : [],
       label : " Policy Charges",
-      data : ifrs4OutputData.emptyArray,
+      data :[],
       details: [
         {
           key : 'allocationCharges',
@@ -698,8 +662,13 @@ console.log("Breakdown of Final PV Charges:", pvChargeBreakdown);
   ]
 
   const renderRow = (item, isDetail = false, detailLevel = 0) => {
-    const paddingLeft = isDetail ? `${(detailLevel + 1) * 48}px` : item.type === 'summary'? '16px' : '20px';
     
+    const paddingLeft = isDetail ? `${(detailLevel + 1) * 48}px` : item.type === 'summary'? '16px' : '20px';
+    const isCollapsedSummary =
+      item.type === 'summary' &&
+      item.label === 'Policy Charges' &&
+      !expandedSections[item.key];
+
     return (
       <tr key={item.key} className={`hover:bg-gray-50 ${isDetail ? 'bg-gray-25' : ''}`}>
         <td className="py-2 px-4 border font-medium" style={{ minWidth: '350px' }}>
@@ -721,7 +690,9 @@ console.log("Breakdown of Final PV Charges:", pvChargeBreakdown);
             </span>
           </div>
         </td>
-        {item.data.map((val, i) => (
+         {/* Conditionally render data cells only if it's NOT a collapsed summary row */}
+      {!isCollapsedSummary &&
+        item.data?.map((val, i) => (
           <td key={i} className="py-2 px-4 border text-right">
             {formatNumber(val)}
           </td>
@@ -774,25 +745,13 @@ console.log("Breakdown of Final PV Charges:", pvChargeBreakdown);
                         </React.Fragment>
                       ))}
            </tbody>
-           <tbody>     
-                      {tableOtherCharges.map(section => (
-                        <React.Fragment key={section.key}>
-                          {renderRow(section)}
-                          {expandedSections[section.key] && section.details.map(detail => 
-                            renderRow(detail, true, 0)
-                          )}
-                        </React.Fragment>
-                      ))}
-           </tbody>
+           
             <tr>
               <td colSpan={ifrs4OutputData?.financialYears?.length + 1} className="border py-2">
                 &nbsp;
               </td>
             </tr>
-          <tr className="bg-gray-60">
-                <th className="py-3 px-4 text-left font-semibold text-gray-700 border " style={{ minWidth: '350px' }}>SUMMARY</th>
-                {ifrs4OutputData?.financialYears?.map(year => (<th key={year} className="py-3 px-4 text-center font-semibold text-gray-700 border"></th>))}
-            </tr>
+        
             <tbody>     
                       {tableProfitKeys.map(section => (
                         <React.Fragment key={section.key}>
@@ -808,6 +767,24 @@ console.log("Breakdown of Final PV Charges:", pvChargeBreakdown);
                 &nbsp;
               </td>
             </tr>
+
+            <tbody>     
+                      {tableOtherCharges.map(section => (
+                        <React.Fragment key={section.key}>
+                          {renderRow(section)}
+                          {expandedSections[section.key] && section.details.map(detail => 
+                            renderRow(detail, true, 0)
+                          )}
+                        </React.Fragment>
+                      ))}
+           </tbody>
+            <tr>
+              <td colSpan={ifrs4OutputData?.financialYears?.length + 1} className="border py-2">
+                &nbsp;
+              </td>
+            </tr>
+
+
         </table>
       </div>
 
@@ -876,7 +853,7 @@ console.log("Breakdown of Final PV Charges:", pvChargeBreakdown);
             </table>
             </div>
             <div className="flex-1 bg-white rounded-lg shadow-md p-4">
-            <h3 className="text-lg font-semibold mb-4">Waterfall Chart</h3>
+            <h3 className="text-lg font-semibold mb-4">Net Profit Walk </h3>
             <WaterfallChart data={ifrs4OutputData.waterfallChartData} />
             </div>
 

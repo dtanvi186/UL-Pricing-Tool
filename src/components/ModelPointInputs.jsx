@@ -135,6 +135,9 @@ const ModelPointInputs = ({ formData, handleModelPointChange }) => {
       setError('');
     }
   };
+  // #235371ff
+  // #013c61ff
+  // #f9f9f9ff
   
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
@@ -156,7 +159,7 @@ const ModelPointInputs = ({ formData, handleModelPointChange }) => {
           className={`px-4 py-2 rounded ${
             modelPoints.length >= MAX_ROWS
               ? 'bg-gray-300 cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
+              : 'bg-[#235371ff] text-white hover:bg-[#013c61ff]'
           }`}
         >
           Add Model Point

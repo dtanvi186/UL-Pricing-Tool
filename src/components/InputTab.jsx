@@ -65,6 +65,10 @@ const InputTab = ({
       setCurrentTableIndex(currentTableIndex - 1);
     }
   };
+
+ // #235371ff
+  // #013c61ff
+  // #f9f9f9ff
   
   return (
     <div className="space-y-8">
@@ -75,8 +79,8 @@ const InputTab = ({
           disabled={currentTableIndex === 0}
           className={`px-4 py-2 rounded-md flex items-center ${
             currentTableIndex === 0 
-              ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
-              : 'bg-blue-600 text-white hover:bg-blue-700'
+              ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+              : 'bg-[#235371ff] text-white hover:bg-[#013c61ff]'
           }`}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
@@ -94,8 +98,8 @@ const InputTab = ({
           disabled={currentTableIndex === tables.length - 1}
           className={`px-4 py-2 rounded-md flex items-center ${
             currentTableIndex === tables.length - 1 
-              ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
-              : 'bg-blue-600 text-white hover:bg-blue-700'
+             ? 'bg-gray-200 text-gray-400 cursor-not-allowed' 
+              : 'bg-[#235371ff] text-white hover:bg-[#013c61ff]'
           }`}
         >
           Next
@@ -109,7 +113,7 @@ const InputTab = ({
       <div className="bg-white rounded-lg shadow-md p-4">
         <div className="w-full bg-gray-200 rounded-full h-2.5">
           <div 
-            className="bg-blue-600 h-2.5 rounded-full transition-all duration-300 ease-in-out" 
+            className="bg-[#235371ff] h-2.5 rounded-full transition-all duration-300 ease-in-out" 
             style={{ width: `${((currentTableIndex + 1) / tables.length) * 100}%` }}
           ></div>
         </div>
@@ -117,7 +121,7 @@ const InputTab = ({
           {tables.map((table, index) => (
             <div 
               key={index}
-              className={`${index === currentTableIndex ? 'font-bold text-blue-600' : ''}`}
+              className={`${index === currentTableIndex ? 'font-bold text-[#013c61ff]' : ''}`}
             >
               {table}
             </div>
@@ -211,6 +215,24 @@ const InputTab = ({
                     </div>
                   </td>
                 </tr>
+
+                {/*} NEW:Investment Income Percent*/}
+                <tr className="hover:bg-gray-50">
+                  <td className="py-2 px-4 border"> Investment Income (%) </td>
+                  <td className="py-2 px-4 border">
+                    <div className="relative">
+                      <input
+                        type="number"
+                        name="flatInvestmentIncomeRate"
+                        value={formData.flatInvestmentIncomeRate}
+                        onChange={handleInputChange}
+                        className="w-full p-1 border rounded pr-6"
+                        step="0.01"
+                      />
+                      <span className="absolute right-2 top-1/2 transform -translate-y-1/2">%</span>
+                    </div>
+                  </td>
+                </tr> 
 
                 {/* NEW: Reinsurance Quota Share */}
                 <tr className="hover:bg-gray-50">

@@ -10,14 +10,13 @@ import { ChevronRight, ChevronDown } from 'lucide-react';
 const IFRS17Out = ({
   formData,
   extractionResults,
-  IFRS4OutData,
-    onDataCalculatedIFRS17Out
+  onDataCalculatedIFRS17Out
 
 }) => {
   const ifrs17OutputData = useMemo(() => {
 
     // Add this check at the very beginning
-    if (!IFRS4OutData ) {
+    if (!extractionResults ) {
       return null; // Exit early if the required data isn't ready
     }
   
@@ -46,28 +45,6 @@ const IFRS17Out = ({
         return total;
       });
     };
-
-        // NPV helper function - this is correct
-    const calculateNPV = (rate, cashFlows) => {
-      return cashFlows.reduce((npv, cashFlow, index) => {
-        return npv + cashFlow / Math.pow(1 + rate, index + 1);
-      }, 0);
-    };
-
-
-    const expectedClaimExclInvestmentComponenet = financialYears.map(( val, i ) => {
-        return IFRS4OutData.grossDeathRiderClaimsNonUnit[i] + IFRS4OutData.grossSurrenderClaimsNonUnit[i] ;
-    })
-
-    const expectedRenewalExpenses  = financialYears.map (( val , i ) =>{
-    return IFRS4OutData.renewalCommission[i] + IFRS4OutData.vendorCommission[i] 
-    + IFRS4OutData.vendorFixedFee[i] + IFRS4OutData.maintenanceExpenses[i] + IFRS4OutData.fundManagementExpense[i]
-    }
-    )
-
-    const expectedRenewalCommission = IFRS4OutData.renewalCommission;
-
-
     const calculateFromDifferentFinancialRow = (columnName) => {
       return financialYears.map((financialYear) => {
         if (!Array.isArray(extractionResults.newData)) return 0;
@@ -86,6 +63,32 @@ const IFRS17Out = ({
         return total;
       });
     };
+
+        // NPV helper function - this is correct
+    const calculateNPV = (rate, cashFlows) => {
+      return cashFlows.reduce((npv, cashFlow, index) => {
+        return npv + cashFlow / Math.pow(1 + rate, index + 1);
+      }, 0);
+    };
+
+
+
+
+    // DONT USE THE OUT PUT DATA FOR CALCULATIONS USE THE EXTRACTION DATA DIRECTLY -- 
+    const expectedClaimExclInvestmentComponenet = financialYears.map(( val, i ) => {
+        return calculateFromSameFinancialRow('NUDeathClaims')[i] + calculateFromSameFinancialRow('SurrenderClaimsNU')[i] ;
+    })
+
+    const expectedRenewalExpenses  = financialYears.map (( val , i ) =>{
+    return calculateFromSameFinancialRow('RenewalCommission')[i]
+    + calculateFromDifferentFinancialRow('VendorCommission')[i] 
+    + calculateFromDifferentFinancialRow( 'VendorFixedFee')[i]
+    + calculateFromDifferentFinancialRow('RenewalExpense')[i] 
+    + calculateFromSameFinancialRow('InvestmentExpenses')[i]
+    }
+    )
+    const expectedRenewalCommission = calculateFromSameFinancialRow('RenewalCommission');
+
     const releaseOfRa = calculateFromDifferentFinancialRow('RARelease');
     const releaseOfCsm = calculateFromDifferentFinancialRow('CSMReleaseMax')
     const insuranceServiceRevenue = financialYears.map (( val, i ) => {
@@ -104,7 +107,7 @@ const IFRS17Out = ({
     
     const insuranceServiceResult =  insuranceServiceRevenue.map (( val , i ) => val - insuranceServiceExpense[i])
 
-    const expectedClaimRecoveryExclIvestmentComponenet = financialYears.map((val , i) => -1 * IFRS4OutData.reinsuranceShare[i]) ;
+    const expectedClaimRecoveryExclIvestmentComponenet = financialYears.map((val , i) => -1 * calculateFromSameFinancialRow('RIShareOfClaimsPaid')[i]) ;
 
     const releaseOfRiRa = calculateFromSameFinancialRow( 'ReinRARelease');
     // this has slightly different values - coming from extraction tab
@@ -123,7 +126,16 @@ const IFRS17Out = ({
         return val + netInsuranceFinanceIncomeAndExpense[i] +
         reinsuranceServiceResult[i] + insuranceServiceResult[i] 
     })
-    const wht = IFRS4OutData.whtOnVendorPayouts;
+
+    const wht =  calculateFromDifferentFinancialRow( 'VendorFixedFee').map((vf, index) => {
+      const vc =calculateFromDifferentFinancialRow('VendorCommission')[index] || 0;
+      const pc = calculateFromSameFinancialRow('RIPremiums')[index] || 0;
+      const rs = calculateFromSameFinancialRow('RIShareOfClaimsPaid')[index] || 0;
+      const whtVenPay = formData.whtOnVendorPayments / 100 || 0;
+
+      return whtVenPay * (vf + vc + pc - rs);
+    });
+    
     const zakat = ifrs17Profit.map ((val , i ) => 
         Math.max( formData.zakatTax/ 100 * ( val - wht[i]) , 0 ) )
     const policyHolderSurplusAt10Percent17 = ifrs17Profit.map(( val ,i ) =>
@@ -135,11 +147,14 @@ const IFRS17Out = ({
         policyHolderSurplusAt10Percent17[i]
     })
 
-    const npvpremiumAt6Percent17 = IFRS4OutData.npvPremiumsAt6Percent;
+  
+
+    const npvpremiumAt6Percent17 = calculateNPV(formData.riskDiscountRate/ 100, calculateFromSameFinancialRow('PremiumIncome')) * (1 + formData.riskDiscountRate / 100);
     const npvprofitAt6Percent17 = calculateNPV( formData.riskDiscountRate/100 , netProfit17 )
 
     const profitMargin17 = (npvprofitAt6Percent17 / npvpremiumAt6Percent17) * 100
-    console.log( " this is the profit margin for 17" , profitMargin17)
+    
+
 
     return {
         financialYears,
@@ -177,7 +192,7 @@ const IFRS17Out = ({
     
     };
 
-  }, [formData, extractionResults, IFRS4OutData ]);
+  }, [formData, extractionResults ]);
 
   
 
@@ -192,13 +207,41 @@ const IFRS17Out = ({
    const [expandedSections, setExpandedSections] = useState({});
 
   const formatNumber = (num) => {
-    if (typeof num !== 'number') return '-';
-    return num.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-  };
+  // Return a placeholder if the input isn't a valid number
+  if (typeof num !== 'number' || isNaN(num)) {
+    return '-';
+  }
+
+  // Check if the number is negative
+  if (num < 0) {
+    // Format the absolute value and wrap it in parentheses
+    const formattedValue = Math.abs(num).toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    });
+    return `(${formattedValue})`;
+  }
+
+  // Format positive numbers and zero as before
+  return num.toLocaleString(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+};
 
 
    const formatPercent = (num, decimal) => {
     if (typeof num !== 'number') return '-';
+    // Check if the number is negative
+  if (num < 0) {
+    // Format the absolute value and wrap it in parentheses
+    const formattedValue = Math.abs(num).toLocaleString(undefined, {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    });
+    return `(${formattedValue})`;
+  }
+
     return num.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: decimal });
   };
 // ADD THIS 
@@ -276,137 +319,109 @@ const IFRS17Out = ({
       ]
     },
     {
-      type: 'summary',
+      type: 'standalone',
       key: 'insuranceServiceResult',
       label: 'Insurance Service Result',
       data: ifrs17OutputData.insuranceServiceResult,
+     
+    },
+  ]
+  const tableStructureRe = [
+    {
+      type : 'summary',
+      key : 'reinsuranceRevenue', 
+      label : 'Reinsurance Revenue' , 
+      data : ifrs17OutputData.reinsuranceRevenue,
       details: [
-         {
-          key: 'insuranceServiceRevenue',
-          label: 'Insurance Service Revenue',
-          data: ifrs17OutputData.insuranceServiceRevenue
+        {
+          key : 'expectedClaimRecoveryExclIvestmentComponenet' ,
+          label : 'Expected Claim Recovery (Excl. Ivestment Componenet)' , 
+          data: ifrs17OutputData.expectedClaimRecoveryExclIvestmentComponenet
         },
-         {
-          key: 'insuranceServiceExpense',
-          label: 'Insurance Service Expense (-)',
-          data: ifrs17OutputData.insuranceServiceExpense
+        {
+          key : 'releaseOfRiRa' , 
+          label : 'Release Of RI RA' ,
+          data: ifrs17OutputData.releaseOfRiRa
         },
-
-      ] // This might be calculated from the two summary fields above
+        {
+          key : 'releaseOfRiCsm' ,
+          label : 'Release Of RI CSM' ,
+            data: ifrs17OutputData.releaseOfRiCsm
+        }
+      ]
     },
-  ]
-// --------------------------------------------------------------------gross ends here
-
-const tableStructureRe = [
-  {
-    type : 'summary',
-     key : 'reinsuranceRevenue', 
-     label : 'Reinsurance Revenue' , 
-     data : ifrs17OutputData.reinsuranceRevenue,
-    details: [
-      {
-        key : 'expectedClaimRecoveryExclIvestmentComponenet' ,
-         label : 'Expected Claim Recovery (Excl. Ivestment Componenet)' , 
-         data: ifrs17OutputData.expectedClaimRecoveryExclIvestmentComponenet
-      },
-      {
-        key : 'releaseOfRiRa' , 
-        label : 'Release Of RI RA' ,
-         data: ifrs17OutputData.releaseOfRiRa
-      },
-      {
-        key : 'releaseOfRiCsm' ,
-         label : 'Release Of RI CSM' ,
-          data: ifrs17OutputData.releaseOfRiCsm
-      }
-    ]
-  },
-
-   {
-    type : 'summary',
-     key : 'amountRecoveredFromReinsurance',
-      label : 'Amount Recovered  From Reinsurance'  , 
-      data : ifrs17OutputData.amountRecoveredFromReinsurance,
-    details: [
-      {
-        key : 'actualClaimsRecovery' ,
-         label : 'Actual Claims Recovery (excl. Investment Component)' 
-         , data: ifrs17OutputData.actualClaimsRecovery
-      },
-    ]
-  },
-
-   {
-    type : 'summary',
-     key : 'reinsuranceServiceResult', 
-     label : 'Reinsurance Service Result'  ,
-      data : ifrs17OutputData.reinsuranceServiceResult,
-
-    details: [
-      {
-        key : 'amountRecoveredFromReinsurance' , 
-        label : 'Amount Recovered From Reinsurance' ,
-         data: ifrs17OutputData.amountRecoveredFromReinsurance
-      },
-      {
-        key : 'reinsuranceRevenue' ,
-         label : 'Reinsurance Revenue' ,
-          data: ifrs17OutputData.reinsuranceRevenue
-      },
-    ]
-    },
-
-  ]
-
-  const profitKeys = [
-     {
-      type: 'standalone',
-     key : 'ifrs17Profit',
-      label : 'IFRS 17 Profit'  ,
-       data : ifrs17OutputData.ifrs17Profit,
-        },
-       {
-        type : 'standalone',
-        key : 'netInsuranceFinanceIncomeAndExpense', 
-        label : 'Net Insurance Finance Income and Expense'  ,
-        data : ifrs17OutputData.netInsuranceFinanceIncomeAndExpense,
-      },
-       {
-        type : 'standalone',
-        key : 'investmentIncomeNuLiability',
-        label : 'Investment Income on Non-Unit Liability'  ,
-        data : ifrs17OutputData.investmentIncomeNuLiability,
-      },
 
     {
-    type: 'summary',
-    key: 'netProfit17', // Use the actual calculated data key
-    label: 'Net Profit',
-    data: ifrs17OutputData.netProfit17, // Add the missing data property
-    details: [
-      { 
-        key: 'wht',
-        label: 'WHT',
-        data: ifrs17OutputData.wht
+      type : 'summary',
+      key : 'amountRecoveredFromReinsurance',
+        label : 'Amount Recovered  From Reinsurance'  , 
+        data : ifrs17OutputData.amountRecoveredFromReinsurance,
+      details: [
+        {
+          key : 'actualClaimsRecovery' ,
+          label : 'Actual Claims Recovery (excl. Investment Component)' 
+          , data: ifrs17OutputData.actualClaimsRecovery
+        },
+      ]
+    },
+
+    {
+      type : 'standalone',
+      key : 'reinsuranceServiceResult', 
+      label : 'Reinsurance Service Result'  ,
+      data : ifrs17OutputData.reinsuranceServiceResult,
       },
-      { 
-        key: 'zakat',
-        label: 'Zakat',
-        data: ifrs17OutputData.zakat
-      },
-      {
-        key: 'policyHolderSurplusAt10Percent17',
-        label: 'Policyholder Surplus @ 10%',
-        data: ifrs17OutputData.policyHolderSurplusAt10Percent17
-      },
-      { 
-        key: 'ifrs17Profit',
-        label: 'IFRS 17 Profit',
-        data: ifrs17OutputData.ifrs17Profit
-      },
+
     ]
-    } 
-  ];
+  const profitKeys = [
+      {
+        type: 'standalone',
+      key : 'ifrs17Profit',
+        label : 'IFRS 17 Profit'  ,
+        data : ifrs17OutputData.ifrs17Profit,
+          },
+        {
+          type : 'standalone',
+          key : 'netInsuranceFinanceIncomeAndExpense', 
+          label : 'Net Insurance Finance Income and Expense'  ,
+          data : ifrs17OutputData.netInsuranceFinanceIncomeAndExpense,
+        },
+        {
+          type : 'standalone',
+          key : 'investmentIncomeNuLiability',
+          label : 'Investment Income on Non-Unit Liability'  ,
+          data : ifrs17OutputData.investmentIncomeNuLiability,
+        },
+
+      {
+      type: 'summary',
+      key: 'netProfit17', // Use the actual calculated data key
+      label: 'Net Profit after Surplus, WHT and Zakat',
+      data: ifrs17OutputData.netProfit17, // Add the missing data property
+      details: [
+        { 
+          key: 'wht',
+          label: 'WHT',
+          data: ifrs17OutputData.wht
+        },
+        { 
+          key: 'zakat',
+          label: 'Zakat',
+          data: ifrs17OutputData.zakat
+        },
+        {
+          key: 'policyHolderSurplusAt10Percent17',
+          label: 'Policyholder Surplus @ 10%',
+          data: ifrs17OutputData.policyHolderSurplusAt10Percent17
+        },
+        { 
+          key: 'ifrs17Profit',
+          label: 'IFRS 17 Profit',
+          data: ifrs17OutputData.ifrs17Profit
+        },
+      ]
+      } 
+    ];  
 
   const renderRow = (item, isDetail = false, detailLevel = 0) => {
    const paddingLeft = isDetail ? `${(detailLevel + 1) * 48}px` : item.type === 'summary'? '16px' : '20px';
@@ -434,7 +449,7 @@ const tableStructureRe = [
         </td>
         {item.data.map((val, i) => (
           <td key={i} className="py-2 px-4 border text-right">
-            {formatNumber(val)}
+            {formatNumber(val, 2)}
           </td>
         ))}
       </tr>
@@ -461,7 +476,7 @@ const tableStructureRe = [
             
           
             <tr className="bg-gray-100">
-              <th className="py-3 px-4 text-left font-semibold text-gray-700 border" style={{ minWidth: '375px' }}>Financial Year in SAR</th>
+              <th className="py-3 px-4 text-left font-semibold text-gray-700 border" style={{ minWidth: '390px' }}>Financial Year in SAR</th>
               {ifrs17OutputData?.financialYears?.map(year => (<th key={year} className="py-3 px-4 text-center font-semibold text-gray-700 border">{year}</th>))}
             </tr>
               <tr className="bg-gray-60">
@@ -496,11 +511,13 @@ const tableStructureRe = [
               </React.Fragment>
             ))}
           </tbody>
-          
-            <tr className="bg-gray-60">
-                <th className="py-3 px-4 text-left font-semibold text-gray-700 border " style={{ minWidth: '350px' }}>SUMMARY</th>
-                {ifrs17OutputData?.financialYears?.map(year => (<th key={year} className="py-3 px-4 text-center font-semibold text-gray-700 border"></th>))}
+          <tr>
+              <td colSpan={ifrs17OutputData?.financialYears?.length + 1} className="border py-2">
+                &nbsp;
+              </td>
             </tr>
+          
+            
              
             <tbody>
             {profitKeys.map(section => (
