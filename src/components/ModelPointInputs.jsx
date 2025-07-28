@@ -21,7 +21,7 @@ const ModelPointInputs = ({ formData, handleModelPointChange }) => {
     } else {
       // No existing model points - create first two rows with default values
       const initialPoints = [
-        {
+       /* {
           SPCODE: 'SP1',
           'Age at entry': 30,
           'Premium Payment Term': 1,
@@ -29,8 +29,8 @@ const ModelPointInputs = ({ formData, handleModelPointChange }) => {
           'Annual Premium': 30000,
           'Sum Assured': 33000,
           'Death Benefit': 'Maximum of Sum Assured and Fund Value',
-          'Weightage': 0.5
-        },
+          'Weightage': 1
+        } */
         {
           SPCODE: 'SP2',
           'Age at entry': 30,
@@ -39,8 +39,8 @@ const ModelPointInputs = ({ formData, handleModelPointChange }) => {
           'Annual Premium': 30000,
           'Sum Assured': 33000,
           'Death Benefit': 'Sum Assured + Fund Value',
-          'Weightage': 0.5
-        }
+          'Weightage': 1
+        } 
       ];
       
       setModelPoints(initialPoints);

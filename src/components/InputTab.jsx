@@ -530,8 +530,8 @@ const InputTab = ({
                 <tr className="bg-gray-100">
                   <th className="py-3 px-4 text-left font-semibold text-gray-700 border">Policy Year</th>
                   <th className="py-3 px-4 text-left font-semibold text-gray-700 border">Lapse Rate</th>
-                  <th className="py-3 px-4 text-left font-semibold text-gray-700 border">Surrender Charge%</th>
-                  <th className="py-3 px-4 text-left font-semibold text-gray-700 border">Surrender Charge Fixed</th>
+                  <th className="py-3 px-4 text-left font-semibold text-gray-700 border">Surrender Charge Fixed </th>
+                  <th className="py-3 px-4 text-left font-semibold text-gray-700 border">Surrender Charge (%)</th>
                 </tr>
               </thead>
              

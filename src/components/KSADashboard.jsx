@@ -106,14 +106,23 @@ useEffect(() => {
       }
     }
     
-    // Initialize surrender charge data
-    const defaultSurrenderCharge = {};
-    for (let year = 1; year <= 20; year++) {
-      defaultSurrenderCharge[year] = {
-        fixed : 0.00,
-        percent:0.00
-      };
+    
+  // ✅ MODIFIED: Initialize surrender charge data with new defaults
+  const defaultSurrenderCharge = {};
+  for (let year = 1; year <= 20; year++) {
+    if (year === 1) {
+      defaultSurrenderCharge[year] = { fixed: 0.00, percent: 20.00 };
+    } else if (year === 2) {
+      defaultSurrenderCharge[year] = { fixed: 0.00, percent: 15.00 };
+    } else if (year === 3) {
+      defaultSurrenderCharge[year] = { fixed: 0.00, percent: 10.00 };
+    } else if (year === 4) {
+      defaultSurrenderCharge[year] = { fixed: 275.00, percent: 0.00 };
+    } else { // For years 5 and onwards
+      defaultSurrenderCharge[year] = { fixed: 275.00, percent: 0.00 };
     }
+  }
+
 
     // Return an object containing all the default tables
     return {
@@ -175,7 +184,7 @@ useEffect(() => {
       model: 'Direct Model',
       reinsuranceQuotaShare: 70.00,     // NEW: Reinsurance Quota Share
       reinsuranceRates: 100.00,         // NEW: Reinsurance Rates (% of AMC00)
-      flatInvestmentIncomeRate : 5,
+      flatInvestmentIncomeRate : 5.00,     // visible 
       
       // Loyalty bonus for specific years
       loyaltyBonus: {
