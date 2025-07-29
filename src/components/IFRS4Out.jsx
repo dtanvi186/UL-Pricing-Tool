@@ -254,6 +254,9 @@ const policyHolderIrrCashflow = grossWrittenPremiums.map((gwp, index) => {
           costToCompanyIrr = NaN; // Set to NaN if calculation fails
         }
 
+        
+
+       
        const shareholderIrr = 5 - costToCompanyIrr;  // displayed 
 
 
@@ -284,7 +287,6 @@ const policyHolderIrrCashflow = grossWrittenPremiums.map((gwp, index) => {
        pvzakat +pvpolicyHolderSurplus ) + pvrirecovery;
 
       const costOfReserves  = npvProfitAt5Percent - npvProfitAt6Percent;
-
       console.log( " this is the cost of reserves", costOfReserves)
       
       const ratioofprofits  = 1;
@@ -846,10 +848,9 @@ const pvChargeBreakdown = [
             </table>
             </div>
             <div className="flex-1 bg-white rounded-lg shadow-md p-4">
-              <h3 className="text-lg font-semibold mb-4">Net Profit Walk ({formData.currency})</h3>
-              <WaterfallChart data={ifrs4OutputData.waterfallChartData} />
+            <h3 className="text-lg font-semibold mb-4">Net Profit Walk ({formData.currency}) </h3>
+            <WaterfallChart data={ifrs4OutputData.waterfallChartData} />
             </div>
-
 
         </div>
          <div className="flex flex-col lg:flex-row gap-6 mt-10">
