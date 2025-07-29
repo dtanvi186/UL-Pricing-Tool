@@ -199,7 +199,7 @@ let checkNpcpremium = [];
 
 
 //ask about this later --- dont forhettttt
-const npvProfitAt6Percent = Math.max ( calculateNPV((formData.flatInvestmentIncomeRate + 1)/100, netProfitAfterZakat), 0 ); 
+const npvProfitAt6Percent = Math.max ( calculateNPV( (formData.flatInvestmentIncomeRate + 1)/100, netProfitAfterZakat) ); 
 
 const profitMargin = (npvProfitAt6Percent / npvPremiumsAt6Percent ) * 100; 
 
@@ -362,7 +362,6 @@ const pvChargeBreakdown = [
 ];
 
 
-
     return {
       financialYears, grossWrittenPremiums, premiumsCeded, netWrittenContributions,
       allocationCharges, adminFee, coi, fundManagementCharges, surrenderCharges,
@@ -418,8 +417,6 @@ const pvChargeBreakdown = [
     maximumFractionDigits: 0,
   });
 };
-
-
    const formatPercent = (num, decimal) => {
     if (typeof num !== 'number') return '-';
     // Check if the number is negative
@@ -587,7 +584,7 @@ const pvChargeBreakdown = [
     {
       type: 'standalone',
       key : 'netProfit' ,
-      label: " Net Profit",
+      label: " Net Profit before WHT, Zakat and PHS surplus",
       data : ifrs4OutputData.netProfit
     },
     {
@@ -708,18 +705,18 @@ const pvChargeBreakdown = [
         <p>Calculating IFRS4 output data...</p>
       </div>
     );
-  }
+  } 
 
 
   // --- FIX 1: The JSX now maps directly over the arrays in ifrs4OutputData ---
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-xl font-semibold mb-6">Financials Output (IFRS4)</h2>
+      <h2 className="text-xl font-semibold mb-6"> `Financials Output in {formData.currency}</h2>
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse">
           <thead>
             <tr className="bg-gray-100">
-              <th className="py-3 px-4 text-left font-semibold text-gray-700 border" style={{ minWidth: '375px' }}>Financial Year in SAR</th>
+              <th className="py-3 px-4 text-left font-semibold text-gray-700 border" style={{ minWidth: '420px' }}>Financial Year</th>
               {ifrs4OutputData.financialYears.map(year => (<th key={year} className="py-3 px-4 text-center font-semibold text-gray-700 border">{year}</th>))}
             </tr>
           </thead>
@@ -824,7 +821,7 @@ const pvChargeBreakdown = [
                 </td>
                 </tr>
             <tr className="hover:bg-gray-50 font-bold">
-                <td className="py-2 px-4 border">shareholder IRR</td>
+                <td className="py-2 px-4 border">Shareholder IRR</td>
                 <td className="py-2 px-4 border text-right" >
                     {formatPercent(ifrs4OutputData.shareholderIrr) + "%"}
                 </td>
@@ -844,7 +841,7 @@ const pvChargeBreakdown = [
                 </td>
                 </tr>
             <tr className="hover:bg-gray-50 font-bold">
-                <td className="py-2 px-4 border">SAICO Profit</td>
+                <td className="py-2 px-4 border"> Company Profit</td>
                 <td className="py-2 px-4 border text-right" >
                     {formatNumber(ifrs4OutputData.SAICOProfit)}
                 </td>
@@ -853,7 +850,7 @@ const pvChargeBreakdown = [
             </table>
             </div>
             <div className="flex-1 bg-white rounded-lg shadow-md p-4">
-            <h3 className="text-lg font-semibold mb-4">Net Profit Walk </h3>
+            <h3 className="text-lg font-semibold mb-4">Net Profit Walk ({formData.currency}) </h3>
             <WaterfallChart data={ifrs4OutputData.waterfallChartData} />
             </div>
 

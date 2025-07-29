@@ -40,7 +40,7 @@ const WaterfallChart = ({ data }) => {
           <div className="bg-white p-3 border border-gray-300 rounded shadow-lg">
             <p className="font-medium">{label}</p>
             <p className="text-blue-600">
-              Value: <span className="font-bold">{data.value.toFixed(2)}</span>
+              Value: <span className="font-bold">{data.value.toFixed(2)} millions </span>
             </p>
           </div>
         );
@@ -52,7 +52,7 @@ const WaterfallChart = ({ data }) => {
   // Custom tick formatter for X-axis to handle line breaks
   const CustomXAxisTick = ({ x, y, payload }) => {
     const words = payload.value.split(' ');
-    const maxWordsPerLine = 2; // Adjust this to control line breaks
+    const maxWordsPerLine = 1; // Adjust this to control line breaks
     const lines = [];
     
     for (let i = 0; i < words.length; i += maxWordsPerLine) {

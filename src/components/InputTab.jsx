@@ -66,6 +66,32 @@ const InputTab = ({
     }
   };
 
+  /**
+ * Formats a number into a comma-separated string.
+ * Returns an empty string if the input is not a valid number.
+ */
+  const formatNumber = (num) => {
+    // Check for null, undefined, or NaN, and return an empty string
+    if (num === null || num === undefined || isNaN(num)) {
+      return "";
+    }
+    // Use toLocaleString to add commas
+    return num.toLocaleString('en-US');
+  };
+
+  /**
+   * Parses a comma-separated string back into a number.
+   * Removes commas and returns an integer.
+   */
+  const parseNumber = (str) => {
+    // Remove all commas from the string
+    const cleanedString = str.replace(/,/g, '');
+    // Parse the cleaned string into an integer
+    const number = parseInt(cleanedString, 10);
+    // Return the number, or 0 if parsing fails (e.g., for an empty input)
+    return isNaN(number) ? 0 : number;
+  };
+
  // #235371ff
   // #013c61ff
   // #f9f9f9ff
@@ -216,23 +242,14 @@ const InputTab = ({
                   </td>
                 </tr>
 
-                {/*} NEW:Investment Income Percent*/}
-                <tr className="hover:bg-gray-50">
-                  <td className="py-2 px-4 border"> Investment Income (%) </td>
-                  <td className="py-2 px-4 border">
-                    <div className="relative">
-                      <input
-                        type="number"
-                        name="flatInvestmentIncomeRate"
-                        value={formData.flatInvestmentIncomeRate}
-                        onChange={handleInputChange}
-                        className="w-full p-1 border rounded pr-6"
-                        step="0.01"
-                      />
-                      <span className="absolute right-2 top-1/2 transform -translate-y-1/2">%</span>
-                    </div>
+                <tr class="bg-gray-100">
+                  <td 
+                    colSpan="2" 
+                    class="py-2 px-4 border font-medium text-gray-700"
+                  >
+                    Reinsurance
                   </td>
-                </tr> 
+                </tr>
 
                 {/* NEW: Reinsurance Quota Share */}
                 <tr className="hover:bg-gray-50">
@@ -272,20 +289,14 @@ const InputTab = ({
                   </td>
                 </tr>
 
-                {/* Currency (replacing Current) */}
-                <tr className="hover:bg-gray-50">
-                  <td className="py-2 px-4 border">Currency</td>
-                  <td className="py-2 px-4 border">
-                    <input
-                      type="text"
-                      name="currency"
-                      value={formData.currency}
-                      onChange={handleInputChange}
-                      className="w-full p-1 border rounded"
-                    />
+                <tr class="bg-gray-100">
+                  <td 
+                    colSpan="2" 
+                    class="py-2 px-4 border font-medium text-gray-700"
+                  >
+                    Vendor Related Information
                   </td>
                 </tr>
-
                 {/* Vendor Commission (% of Policy Administration charges) */}
                 <tr className="hover:bg-gray-50">
                   <td className="py-2 px-4 border">Vendor Commission (% of Policy Administration charges)</td>
@@ -354,6 +365,49 @@ const InputTab = ({
                     </div>
                   </td>
                 </tr>
+                <tr class="bg-gray-100">
+                  <td 
+                    colSpan="2" 
+                    class="py-2 px-4 border font-medium text-gray-700"
+                  >
+                    Other Information 
+                  </td>
+                </tr>
+
+                
+                {/* Currency (replacing Current) */}
+                <tr className="hover:bg-gray-50">
+                  <td className="py-2 px-4 border">Currency</td>
+                  <td className="py-2 px-4 border">
+                    <input
+                      type="text"
+                      name="currency"
+                      value={formData.currency}
+                      onChange={handleInputChange}
+                      className="w-full p-1 border rounded"
+                    />
+                  </td>
+                </tr>
+
+                {/*} NEW:Investment Income Percent*/}
+                <tr className="hover:bg-gray-50">
+                  <td className="py-2 px-4 border"> Investment Income (%) </td>
+                  <td className="py-2 px-4 border">
+                    <div className="relative">
+                      <input
+                        type="number"
+                        name="flatInvestmentIncomeRate"
+                        value={formData.flatInvestmentIncomeRate}
+                        onChange={handleInputChange}
+                        className="w-full p-1 border rounded pr-6"
+                        step="0.01"
+                      />
+                      <span className="absolute right-2 top-1/2 transform -translate-y-1/2">%</span>
+                    </div>
+                  </td>
+                </tr> 
+
+
               </tbody>
             </table>
           </div>
@@ -378,69 +432,64 @@ const InputTab = ({
                   })}
                 </tr>
               </thead>
-              <tbody>
-                {/* VISIBLE PARAMETERS (1-3) */}
-                
-                {/* New Business Policy Count */}
-                <tr className="hover:bg-gray-50">
-                  <td className="py-2 px-4 border font-medium">New Business Policy Count</td>
-                  {[...Array(5)].map((_, index) => {
-                    const year = new Date(formData.valuationDate).getFullYear() + index;
-                    return (
-                      <td key={year} className="py-2 px-4 border">
-                        <input
-                          type="number"
-                          value={formData.businessProjections?.policyCount?.[year] || ""}
-                          onChange={(e) => handleBusinessProjectionChange('policyCount', year, e.target.value)}
-                          className="w-full p-1 border rounded text-right"
-                          step="1"
-                          min="0"
-                        />
-                      </td>
-                    );
-                  })}
-                </tr>
-                
-                {/* Maintenance Expense */}
-                <tr className="hover:bg-gray-50">
-                  <td className="py-2 px-4 border font-medium">Maintenance Expense</td>
-                  {[...Array(5)].map((_, index) => {
-                    const year = new Date(formData.valuationDate).getFullYear() + index;
-                    return (
-                      <td key={year} className="py-2 px-4 border">
-                        <input
-                          type="number"
-                          value={formData.businessProjections?.maintenanceExpense?.[year] || ""}
-                          onChange={(e) => handleBusinessProjectionChange('maintenanceExpense', year, e.target.value)}
-                          className="w-full p-1 border rounded text-right"
-                          step="1"
-                          min="0"
-                        />
-                      </td>
-                    );
-                  })}
-                </tr>
-                
-                {/* Acquisition Expense */}
-                <tr className="hover:bg-gray-50">
-                  <td className="py-2 px-4 border font-medium">Acquisition Expense</td>
-                  {[...Array(5)].map((_, index) => {
-                    const year = new Date(formData.valuationDate).getFullYear() + index;
-                    return (
-                      <td key={year} className="py-2 px-4 border">
-                        <input
-                          type="number"
-                          value={formData.businessProjections?.acquisitionExpense?.[year] || ""}
-                          onChange={(e) => handleBusinessProjectionChange('acquisitionExpense', year, e.target.value)}
-                          className="w-full p-1 border rounded text-right"
-                          step="1"
-                          min="0"
-                        />
-                      </td>
-                    );
-                  })}
-                </tr>
-              </tbody>
+             <tbody>
+  {/* New Business Policy Count */}
+  <tr className="hover:bg-gray-50">
+    <td className="py-2 px-4 border font-medium">New Business Policy Count</td>
+    {[...Array(5)].map((_, index) => {
+      const year = new Date(formData.valuationDate).getFullYear() + index;
+      return (
+        <td key={year} className="py-2 px-4 border">
+          <input
+            type="text" 
+            inputMode="numeric"
+            value={formatNumber(formData.businessProjections?.policyCount?.[year])} 
+            onChange={(e) => handleBusinessProjectionChange('policyCount', year, parseNumber(e.target.value))} 
+            className="w-full p-1 border rounded text-right"
+          />
+        </td>
+      );
+    })}
+  </tr>
+
+  {/* Maintenance Expense */}
+  <tr className="hover:bg-gray-50">
+    <td className="py-2 px-4 border font-medium">Maintenance Expense ({formData.currency})</td>
+    {[...Array(5)].map((_, index) => {
+      const year = new Date(formData.valuationDate).getFullYear() + index;
+      return (
+        <td key={year} className="py-2 px-4 border">
+          <input
+            type="text" 
+            inputMode="numeric"
+            value={formatNumber(formData.businessProjections?.maintenanceExpense?.[year])} 
+            onChange={(e) => handleBusinessProjectionChange('maintenanceExpense', year, parseNumber(e.target.value))}
+            className="w-full p-1 border rounded text-right" 
+          />
+        </td>
+      );
+    })}
+  </tr>
+
+  {/* Acquisition Expense */}
+  <tr className="hover:bg-gray-50">
+    <td className="py-2 px-4 border font-medium">Acquisition Expense ({formData.currency})</td>
+    {[...Array(5)].map((_, index) => {
+      const year = new Date(formData.valuationDate).getFullYear() + index;
+      return (
+        <td key={year} className="py-2 px-4 border">
+          <input
+            type="text" 
+            inputMode="numeric"
+            value={formatNumber(formData.businessProjections?.acquisitionExpense?.[year])}
+            onChange={(e) => handleBusinessProjectionChange('acquisitionExpense', year, parseNumber(e.target.value))}
+            className="w-full p-1 border rounded text-right"
+          />
+        </td>
+      );
+    })}
+  </tr>
+</tbody>
             </table>
           </div>
         </div>

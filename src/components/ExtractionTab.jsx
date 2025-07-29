@@ -124,9 +124,13 @@ const ExtractionTab = ({  extractionResults,   }) => {
               <th className="py-3 px-4 text-left font-semibold text-gray-700 border">Age</th>
               <th className="py-3 px-4 text-left font-semibold text-gray-700 border">Loyalty Bonus</th>
               <th className="py-3 px-4 text-left font-semibold text-gray-700 border">Scalar</th>
-              <th className="py-3 px-4 text-left font-semibold text-gray-700 border">Surrender Charge</th>
+             
+              <th className="py-3 px-4 text-left font-semibold text-gray-700 border">Surrender Charge fixed </th>
+              <th className="py-3 px-4 text-left font-semibold text-gray-700 border">Surrender Charge percent</th>
 
-               <th className="py-3 px-4 text-left font-semibold text-gray-700 border">Surrender Charge RATE </th>
+
+
+               
 
               <th className="py-3 px-4 text-left font-semibold text-gray-700 border">Commission</th>
               <th className="py-3 px-4 text-left font-semibold text-gray-700 border">Allocation Charge</th>
@@ -288,8 +292,8 @@ const ExtractionTab = ({  extractionResults,   }) => {
                 <td className="py-2 px-4 border">{row.LoyaltyBonus !== undefined ? `${row.LoyaltyBonus.toFixed(2)}%` : '0.00%'}</td>
                 <td className="py-2 px-4 border">{row.Scalar !== undefined ? row.Scalar.toFixed(2) : '0.00'}</td>
                 {/* 🔴 FIX: Change from percentage formatting to number formatting */}
-                <td className="py-2 px-4 border">{row.SurrenderCharge !== undefined ? row.SurrenderCharge.toFixed(2) : '0.00'}</td>
-                <td className="py-2 px-4 border">{row.SurrenderChargeRate !== undefined ? row.SurrenderChargeRate.toFixed(2) : '0.00'}</td>
+                <td className="py-2 px-4 border">{row.SurrenderChargeFixed !== undefined ? row.SurrenderChargeFixed.toFixed(2) : '0.00'}</td>
+                <td className="py-2 px-4 border">{row.SurrenderChargePercent !== undefined ? row.SurrenderChargePercent.toFixed(2) : '0.00'}</td>
 
                 <td className="py-2 px-4 border">{row.Commission !== null && row.Commission !== undefined ? `${row.Commission.toFixed(2)}%` : ''}</td>
                 <td className="py-2 px-4 border">{row.AllocationCharge !== null && row.AllocationCharge !== undefined ? `${row.AllocationCharge.toFixed(2)}%` : ''}</td>

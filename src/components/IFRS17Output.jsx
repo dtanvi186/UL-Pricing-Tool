@@ -120,6 +120,7 @@ const IFRS17Out = ({
     const reinsuranceServiceResult = reinsuranceRevenue.map (( val , i ) => val - amountRecoveredFromReinsurance[i])
 
     const netInsuranceFinanceIncomeAndExpense = financialYears.map( (val, i) => - 1 * calculateFromSameFinancialRow('InterestEarnedOnRICSM')[i] );
+
     const investmentIncomeNuLiability = calculateFromDifferentFinancialRow('InvestmentIncomeNufIfrs17');
 
     const ifrs17Profit = investmentIncomeNuLiability.map (( val , i) => {
@@ -149,8 +150,8 @@ const IFRS17Out = ({
 
   
 
-    const npvpremiumAt6Percent17 = calculateNPV(formData.riskDiscountRate/ 100, calculateFromSameFinancialRow('PremiumIncome')) * (1 + formData.riskDiscountRate / 100);
-    const npvprofitAt6Percent17 = calculateNPV( formData.riskDiscountRate/100 , netProfit17 )
+    const npvpremiumAt6Percent17 = calculateNPV((1 + formData.flatInvestmentIncomeRate)/ 100, calculateFromSameFinancialRow('PremiumIncome')) * (1 + (1 + formData.flatInvestmentIncomeRate) / 100);
+    const npvprofitAt6Percent17 = calculateNPV( (1 + formData.flatInvestmentIncomeRate)/100 , netProfit17 )
 
     const profitMargin17 = (npvprofitAt6Percent17 / npvpremiumAt6Percent17) * 100
     
@@ -374,12 +375,7 @@ const IFRS17Out = ({
 
     ]
   const profitKeys = [
-      {
-        type: 'standalone',
-      key : 'ifrs17Profit',
-        label : 'IFRS 17 Profit'  ,
-        data : ifrs17OutputData.ifrs17Profit,
-          },
+     
         {
           type : 'standalone',
           key : 'netInsuranceFinanceIncomeAndExpense', 
@@ -392,6 +388,12 @@ const IFRS17Out = ({
           label : 'Investment Income on Non-Unit Liability'  ,
           data : ifrs17OutputData.investmentIncomeNuLiability,
         },
+         {
+        type: 'standalone',
+        key : 'ifrs17Profit',
+        label : 'Net Insurance Service Result'  ,
+        data : ifrs17OutputData.ifrs17Profit,
+          },
 
       {
       type: 'summary',
@@ -416,7 +418,7 @@ const IFRS17Out = ({
         },
         { 
           key: 'ifrs17Profit',
-          label: 'IFRS 17 Profit',
+          label: 'Net Insurance Service Resul',
           data: ifrs17OutputData.ifrs17Profit
         },
       ]
@@ -469,14 +471,14 @@ const IFRS17Out = ({
   // --- FIX 1: The JSX now maps directly over the arrays in ifrs4OutputData ---
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-xl font-semibold mb-6">Financials Output (IFRS17)</h2>
+      <h2 className="text-xl font-semibold mb-6">Financials Output in {formData.currency} </h2>
       <div className="overflow-x-auto">
         <table className="min-w-full border-collapse">
           <thead>
             
           
             <tr className="bg-gray-100">
-              <th className="py-3 px-4 text-left font-semibold text-gray-700 border" style={{ minWidth: '390px' }}>Financial Year in SAR</th>
+              <th className="py-3 px-4 text-left font-semibold text-gray-700 border" style={{ minWidth: '390px' }}>Financial Year</th>
               {ifrs17OutputData?.financialYears?.map(year => (<th key={year} className="py-3 px-4 text-center font-semibold text-gray-700 border">{year}</th>))}
             </tr>
               <tr className="bg-gray-60">
@@ -517,8 +519,7 @@ const IFRS17Out = ({
               </td>
             </tr>
           
-            
-             
+          
             <tbody>
             {profitKeys.map(section => (
               <React.Fragment key={section.key}>

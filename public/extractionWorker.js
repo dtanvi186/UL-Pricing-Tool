@@ -109,17 +109,33 @@ function performExtraction(calculationInputs) {
           if (month > 0 && policyYear !== Math.floor(((month - 1) - 1) / 12) + 1) {
             loyaltyBonus = safeLookup(calculationInputs.loyaltyBonus, policyYear) || 0;
           }
-  
+
+
+          /*/ comment out the wrong calculations
           let surrenderCharge = 0; 
           if (month > 0) {
             // 1. Look up the surrender charge object for the policy year
             const surrenderChargeValues = safeLookup(calculationInputs.surrenderCharge, policyYear) || { fixed: 0, percent: 0 };
-            
             // 2. Get the fixed and percent values, defaulting to 0 if not found
             const fixedCharge = surrenderChargeValues.fixed || 0;
             const percentCharge = surrenderChargeValues.percent || 0;
             // 4. The total surrender charge is the sum of both parts
             surrenderCharge = fixedCharge + percentCharge;
+          } */
+
+          // get the fixed surrender charge 
+          let surrenderChargeFixed = 0
+          if (month > 0) {
+            // 1. Look up the surrender charge object for the policy year
+            const surrenderChargeValues = safeLookup(calculationInputs.surrenderCharge, policyYear) || { fixed: 0, percent: 0 };
+           surrenderChargeFixed = surrenderChargeValues.fixed || 0;
+          }
+
+          let surrenderChargePercent = 0
+           if (month > 0) {
+            // 1. Look up the surrender charge object for the policy year
+            const surrenderChargeValues = safeLookup(calculationInputs.surrenderCharge, policyYear) || { fixed: 0, percent: 0 };
+           surrenderChargePercent = surrenderChargeValues.percent/ 100 || 0;
           }
 
 
@@ -141,12 +157,20 @@ function performExtraction(calculationInputs) {
               }
             }
           }
-  
-          let monthlyInterestRate = 0;
+
+          // change the defination to use the flat rate added as an input
+          /*let monthlyInterestRate = 0;
           if (month > 0) {
             monthlyInterestRate = safeLookup(calculationInputs.yieldCurves, month) || 0;
-          }
-  
+          } */
+
+          let monthlyInterestRate = 0;
+          if (month > 0) {
+            monthlyInterestRate =  Math.pow((1 + calculationInputs.flatInvestmentIncomeRate/100), 1/12 ) - 1 
+          } 
+
+          console.log( " thiss is the monthly rate now ", monthlyInterestRate)
+          
           let deathRate = 0;
           if (month > 0) {
             const baseMortalityRate = safeLookup(calculationInputs.mortalityData, age, 0);
@@ -162,7 +186,7 @@ function performExtraction(calculationInputs) {
             const annualLapseRate = (safeLookup(calculationInputs.lapseRate, policyYear) || 0) / 100;
             surrenderRate = 1 - Math.pow(1 - annualLapseRate, 1/12);
           }
-          
+
           // Calculate policy movement
           let noPBoP = 0;
           if (month === 1) {
@@ -254,12 +278,15 @@ function performExtraction(calculationInputs) {
         const fixed = surrenderChargeValues?.fixed ?? 0;
         const percent = surrenderChargeValues?.percent ?? 0;
         const surrenderChargeRate = fixed + percent; */
-        
-        const surrenderChargeRate = surrenderCharge;
 
-          const surrenderChargesAmount = surrenderChargeRate > 100 ? 
-            Math.min(undecrementedFVAfterDeductionBB, surrenderChargeRate) * noOfSurrs * scalar :
-            undecrementedFVAfterDeductionBB * scalar * (surrenderChargeRate / 100) * noOfSurrs;
+        //const surrenderChargeRate = surrenderCharge;
+
+         let surrenderChargesAmount = 0;
+             if(month > 0){
+              surrenderChargesAmount = Math.min(undecrementedFVAfterDeductionBB,
+                  undecrementedFVAfterDeductionBB* scalar * surrenderChargePercent * noOfSurrs + scalar * surrenderChargeFixed * noOfSurrs) }
+            
+
           const nuSurrenderClaims = 0;
           const surrUnitOutgo = Math.max(
             undecrementedFVAfterDeductionBB * noOfSurrs * scalar - surrenderChargesAmount, 0);
@@ -269,12 +296,11 @@ function performExtraction(calculationInputs) {
             (unitFundAfterDeduction + prevLoyaltyBonusAmount) * (1 + monthlyInterestRate) - 
             fundManagementChargeAmount - surrenderChargesAmount - deathUnitOutgo - surrUnitOutgo, 0);
   
-        
-          
+      
           // Store calculation
           calculations.push({
             month, policyYear, age, formattedValuationDate, valuationYear,
-            loyaltyBonus, surrenderCharge, surrenderChargeRate,commission, allocationCharge, monthlyInterestRate,
+            loyaltyBonus, surrenderChargeFixed, surrenderChargePercent, commission, allocationCharge, monthlyInterestRate,
             deathRate, surrenderRate, scalar, death_option, sumAssured, policyTerm, ppt,
             noPBoP, noOfDeaths, noOfSurrs, noOfMats, noPEoP, 
             premiumIncome, allocationChargeAmount, adminFee, initialCommission, renewalCommission,
@@ -865,12 +891,6 @@ function performExtraction(calculationInputs) {
                 vendorFixedFee = 0;
             }
   
-         
-  
-  
-        
-  
-  
             let nlCfsSm = 0;
             if (current.month !== 0) {
               // CORRECT: Sum all outflows and subtract all inflows
@@ -1010,7 +1030,9 @@ function performExtraction(calculationInputs) {
             const currentYearlyMetrics = current.yearlyMetrics?.[tyYear] || {};
   
             let changeInNetNonUnitReserves = currentYearlyMetrics.grossNonUnitFundReserves -  prevYearlyMetrics.grossNonUnitFundReserves + current.riReserves - prev.riReserves ;
+
             let investmentIncomeNuf = (prevYearlyMetrics.grossNonUnitFundReserves + prev.riReserves - currentYearlyMetrics.nlCfsSm - current.riPremiums ) * current.monthlyInterestRate ;
+
             let grossBEL = (current.month !=="")? currentYearlyMetrics.grossNonUnitFundReservesIfrs17 + current.unitFundInforce : 0 ;
             let pvOfTotalOutgo = (current.month === "" || current.month === 0) ? 0 : grossBEL + current.pvOfPremium  ;
             let RA = (current.month !== "")? pvOfTotalOutgo * calculationInputs.grossRiskAdjustment / 100 : 0 ;
@@ -1113,7 +1135,7 @@ function performExtraction(calculationInputs) {
             // calculate the investmentIncomeNufIfrs17
             let investmentIncomeNufIfrs17 = current.month !== "" ? 
               ( prev.riReserves + prevYearlyMetrics.grossNonUnitFundReserves + prevYearlyMetrics.closingRA 
-                + prevYearlyMetrics.closingCSM + prev.closingReinRa + prev.closingRiCsm - currentYearlyMetrics.nlCfsSm
+                + prevYearlyMetrics.closingCsmMax + prev.closingReinRa + prev.closingRiCsm - currentYearlyMetrics.nlCfsSm
                 - current.riPremiums) * current.monthlyInterestRate 
               : 0;
   
@@ -1220,6 +1242,8 @@ function performExtraction(calculationInputs) {
               LoyaltyBonus: calc.loyaltyBonus,
               Scalar: calc.scalar,
               SurrenderCharge: calc.surrenderCharge,
+              SurrenderChargeFixed : calc.surrenderChargeFixed,
+              SurrenderChargePercent: calc.surrenderChargePercent,
               SurrenderChargeRate : calc.surrenderChargeRate,
               Commission: calc.commission,
               AllocationCharge: calc.allocationCharge,
@@ -1324,3 +1348,4 @@ function performExtraction(calculationInputs) {
     };
 
 
+// change everywhere there is RDR Tto investment income relation 
