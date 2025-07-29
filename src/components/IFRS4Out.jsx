@@ -847,7 +847,7 @@ const pvChargeBreakdown = [
               </tbody>
             </table>
             </div>
-            <div className="flex-1 bg-white rounded-lg shadow-md p-4">
+            <div className="w-full bg-white rounded-lg shadow-md p-4 overflow-x-auto">
             <h3 className="text-lg font-semibold mb-4">Net Profit Walk ({formData.currency}) </h3>
             <WaterfallChart data={ifrs4OutputData.waterfallChartData} />
             </div>
