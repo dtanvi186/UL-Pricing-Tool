@@ -288,21 +288,21 @@ const policyHolderIrrCashflow = grossWrittenPremiums.map((gwp, index) => {
       const costOfReserves  = pvnetprofit - npvProfitAt6Percent;
       console.log( " this is the cost of reserves", costOfReserves)
       
-      const ratioofprofits  = npvProfitAt6Percent / pvnetprofit ;
-const finalpvcharges = ratioofprofits * PVCharges / 1000000;
-const finalpvLoyaltyBonus = ratioofprofits * pvLoyaltyBonus / 1000000;
-const finalpvsalescommission = ratioofprofits * pvsalescommission / 1000000;
-const finalpvtotalExpenses = ratioofprofits * pvtotalExpenses / 1000000;
-const finalpvacqexpenses = ratioofprofits* pvacqexpenses / 1000000
-const finalpvmainexp = ratioofprofits*pvmainexpesn / 1000000
-const finalpvfundexpense = ratioofprofits* pvfundManagementExpense / 1000000;
-const finalpvceded = ratioofprofits * pvceded / 1000000;
-const finalpvgrossClaims = ratioofprofits * pvgrossClaims / 1000000;
-const finalpvrirecovery = ratioofprofits * pvrirecovery / 1000000;
-const finalpvvendorCom = ratioofprofits * pvvendorCom / 1000000;
-const finalpvzakat = ratioofprofits * pvzakat / 1000000;
-const finalpvpolicyHolderSurplus = ratioofprofits * pvpolicyHolderSurplus / 1000000;
-const finalpvcostOfReserves = ratioofprofits * costOfReserves/ 1000000;
+      const ratioofprofits  = 1;
+      const finalpvcharges = ratioofprofits * PVCharges / 1000000;
+      const finalpvLoyaltyBonus = ratioofprofits * pvLoyaltyBonus / 1000000;
+      const finalpvsalescommission = ratioofprofits * pvsalescommission / 1000000;
+      const finalpvtotalExpenses = ratioofprofits * pvtotalExpenses / 1000000;
+      const finalpvacqexpenses = ratioofprofits* pvacqexpenses / 1000000
+      const finalpvmainexp = ratioofprofits*pvmainexpesn / 1000000
+      const finalpvfundexpense = ratioofprofits* pvfundManagementExpense / 1000000;
+      const finalpvceded = ratioofprofits * pvceded / 1000000;
+      const finalpvgrossClaims = ratioofprofits * pvgrossClaims / 1000000;
+      const finalpvrirecovery = ratioofprofits * pvrirecovery / 1000000;
+      const finalpvvendorCom = ratioofprofits * pvvendorCom / 1000000;
+      const finalpvzakat = ratioofprofits * pvzakat / 1000000;
+      const finalpvpolicyHolderSurplus = ratioofprofits * pvpolicyHolderSurplus / 1000000;
+      const finalpvcostOfReserves = ratioofprofits * costOfReserves/ 1000000;
 
 
 const finalpvnetprofit = finalpvcharges - (
