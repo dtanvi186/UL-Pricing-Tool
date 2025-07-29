@@ -199,7 +199,8 @@ let checkNpcpremium = [];
 
 
 //ask about this later --- dont forhettttt
-const npvProfitAt6Percent = Math.max ( calculateNPV( (formData.flatInvestmentIncomeRate + 1)/100, netProfitAfterZakat) ); 
+const npvProfitAt6Percent =  calculateNPV( (formData.flatInvestmentIncomeRate + 1)/100, netProfitAfterZakat) ; 
+const npvProfitAt5Percent =  calculateNPV( (formData.flatInvestmentIncomeRate )/100, netProfitAfterZakat)  
 
 const profitMargin = (npvProfitAt6Percent / npvPremiumsAt6Percent ) * 100; 
 
@@ -253,9 +254,6 @@ const policyHolderIrrCashflow = grossWrittenPremiums.map((gwp, index) => {
           costToCompanyIrr = NaN; // Set to NaN if calculation fails
         }
 
-        
-
-       
        const shareholderIrr = 5 - costToCompanyIrr;  // displayed 
 
 
@@ -285,7 +283,8 @@ const policyHolderIrrCashflow = grossWrittenPremiums.map((gwp, index) => {
       pvceded + pvgrossClaims + pvvendorCom  +
        pvzakat +pvpolicyHolderSurplus ) + pvrirecovery;
 
-      const costOfReserves  = pvnetprofit - npvProfitAt6Percent;
+      const costOfReserves  = npvProfitAt5Percent - npvProfitAt6Percent;
+
       console.log( " this is the cost of reserves", costOfReserves)
       
       const ratioofprofits  = 1;
@@ -373,15 +372,12 @@ const pvChargeBreakdown = [
       interestEarnedNonUnitFund, netProfit,  whtOnVendorPayouts, zakat, netProfitAfterZakat, policyHolderSurplus, fundManagementExpense,
       npvPremiumsAt6Percent, npvProfitAt6Percent, policyHolderIrrCashflow, phirr, profitMargin,
       vendorProfit, SAICOProfit, profitBeforeVendorPayment, shareholderIrr, 
-       finalpvnetprofit ,waterfallChartData, pieChartData,pvChargeBreakdown ,
-
+      finalpvnetprofit ,waterfallChartData, pieChartData,pvChargeBreakdown ,
        totalExpenses,
        changesInReserves , 
        investmentIncome,
        emptyArray
-
        // print to show the out put for the policy 
-    
     };
 
   }, [formData, extractionResults ]);
@@ -850,9 +846,10 @@ const pvChargeBreakdown = [
             </table>
             </div>
             <div className="flex-1 bg-white rounded-lg shadow-md p-4">
-            <h3 className="text-lg font-semibold mb-4">Net Profit Walk ({formData.currency}) </h3>
-            <WaterfallChart data={ifrs4OutputData.waterfallChartData} />
+              <h3 className="text-lg font-semibold mb-4">Net Profit Walk ({formData.currency})</h3>
+              <WaterfallChart data={ifrs4OutputData.waterfallChartData} />
             </div>
+
 
         </div>
          <div className="flex flex-col lg:flex-row gap-6 mt-10">

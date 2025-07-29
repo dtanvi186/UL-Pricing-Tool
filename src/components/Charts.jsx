@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LabelList, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, LabelList, ResponsiveContainer, ReferenceLine, Cell } from 'recharts';
 import { PieChart, Pie } from 'recharts';
 
 const WaterfallChart = ({ data }) => {
@@ -80,7 +80,8 @@ const WaterfallChart = ({ data }) => {
 
   return (
     <div className="w-full overflow-x-auto">
-      <div className="min-w-[1200px] mx-auto">
+     <div className="w-full">
+
         <ResponsiveContainer width="100%" height={450}>
           <BarChart 
             data={processedData} 
@@ -94,6 +95,7 @@ const WaterfallChart = ({ data }) => {
               height={80}
             />
             <YAxis />
+            <ReferenceLine y={0} stroke="#00000062" strokeWidth={1.5} ifOverflow="visible" />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(59, 130, 246, 0.1)' }} />
             
             <Bar dataKey="start" stackId="a" fill="transparent" />
