@@ -54,11 +54,39 @@ const addMonths = (dateString, months) => {
         return null;
       }
     };
+
+    /**
+     * 
+     * All calculations in this file are repeated for each model point (i.e., performed row-wise).
+
+      📌 General Guidelines:
+      To add a new field, define and calculate it in one of the passes (for loops) below.
+      Ensure all dependent variables used in your new field are available before the pass you choose.
+      Fields can either be calculated monthly (like most flat values) or annually per projection year (like expenses ).
+      You must update the final output arrays (newData or flatYearlyMetric) to include your new field — otherwise,
+       it will not be exported.
+      
+      To process model point data effectively, two types of row index passes are used:
+      Forward Pass: Accesses data using row index i for current values (current, currentYearlyMetric) and row index i - 1 for previous values (prev, prevYearlyMetric).
+      Backward Pass: Uses row index i for current data (current, currentYearlyMetric) and row index i + 1 for next values (next, nextYearlyMetric).
+      NOTE: The currentYearlyMetric, prevYearlyMetric, and nextYearlyMetric all refer to the same projection year across different rows, not different years within the same row.
+      The flatYearlyMetric array holds all fields that are repeated for each target year, even though they are populated row wise like all other fields—not annually.
+
+      After calculating a new field:
+      Add it to either newData (for non-yearly fields) or flatYearlyMetric (for repeated yearly fields)
+      Ensure the field is rendered properly by updating the extraction tab accordingly
+   
+     * the "expenses calculation" section store the calculations for the "expenses" tab - if you wish to add another value to the
+     * expenses tab, please make the changes within this section
+     * these values are calculated annually( corresponding to the number of projection years )
+     * dont forget to add the new expenses field expenses array in the end 
+   
+    */
   
     
 // Simplified example for demo. You’ll paste your actual full extraction logic here.
 function performExtraction(calculationInputs) {
-     const targetYears = ['2025', '2026', '2027', '2028', '2029'];
+     const targetYears = ['2025', '2026', '2027', '2028', '2029']; // to update the years change this
       const newData = [];
       const allMaintExp = [];
       const allVFF = [];
@@ -643,7 +671,7 @@ function performExtraction(calculationInputs) {
           current.closingRiCsm = (current.openingRiCsm || 0) + (current.interestEarnedOnRiCsm || 0) - (current.riCsmRelease || 0);
         }
   
-        //-----------------------------------------------------------------------------------------------------------------------------------------Summary calculations start
+        //-----------------------------------------------------------------------------------------------------------------------------------------expenses calculations start
   
         
       
@@ -802,7 +830,7 @@ function performExtraction(calculationInputs) {
   
         
   
-    // ---------------------------------------------------------------------------------------------------------------summary data calculations end hear
+    // ---------------------------------------------------------------------------------------------------------------expenses data calculations end hear
     // ----------------------------------------------------------------------------------------------------------------Pass 8
   
   
@@ -931,6 +959,7 @@ function performExtraction(calculationInputs) {
       for (let i = calculations.length - 1; i >= 0; i--) {
           const current = calculations[i];
           const next = calculations[i + 1] || {};
+          
       
           let grossNonUnitFundReserves = 0;
           
@@ -1004,19 +1033,76 @@ function performExtraction(calculationInputs) {
                   grossNonUnitFundReservesIfrs17 = -nextInflows + nextOutflows + nextReserveComponent;
               }
           }
+
+          /// added new fields below 
+          let grossIfrs4NonUnitFundReserves  = 0;
+          
+           if (current.month !== "") {
+            // safe condition
+            if( current.month === 0){
+               grossIfrs4NonUnitFundReserves = 0;
+            }
+              if ( current.noPBoP === 0) {
+                  grossIfrs4NonUnitFundReserves = 0;
+              } else {
+                  // FIXED: Same logic as above
+                  const firstYear = tyYear - tyIndex ;
+                  const nextYearlyMetrics = next.yearlyMetrics?.[tyYear] || {};
+                  
+                  const nextInflows = (next.allocationChargeAmount || 0) + 
+                                    (next.adminFee || 0) + 
+                                    (next.coi || 0);
+                  
+                  const nextOutflows = (next.initialCommission || 0) + 
+                                     (next.renewalCommission || 0) + 
+                                     (next.investmentExpenses || 0) + 
+                                     (current.loyaltyBonusAmount || 0) + 
+                                     (nextYearlyMetrics.initialExpense || 0) + 
+                                     (nextYearlyMetrics.renewalExpense || 0) + 
+                                     (nextYearlyMetrics.vendorCommission || 0) + 
+                                     (nextYearlyMetrics.vendorFixedFee || 0);
+                  
+                  const nextReserveComponent = ((next.nuDeathClaims || 0) - 
+                                              (next.fundManagementChargeAmount || 0) - 
+                                              (next.surrenderChargesAmount || 0) + 
+                                              (next.yearlyMetrics?.[firstYear]?.grossIfrs4NonUnitFundReserves || 0)) / (1 + (next.monthlyInterestRate || 0));
   
-  
-            // Store in yearlyMetrics for this target year
+                  grossIfrs4NonUnitFundReserves = Math.max(-nextInflows + nextOutflows + nextReserveComponent , 0) ;
+                }
+            }
+          ;
+
+          // added new field below 
+          let riReservesIfrs4 = 0;
+          if(current.month !== "") {
+           
+            if  ( current.noPBoP === 0){
+            riReservesIfrs4 = 0
+            }else{
+              
+              const value = Math.max( grossIfrs4NonUnitFundReserves + next.riPremiums
+                +( ( - next.riShareOfClaimsPaid + next.riReserves)/ ( 1 + next.monthlyInterestRate || 0 ) )
+               , 0) 
+               riReservesIfrs4 = value - grossIfrs4NonUnitFundReserves
+               
+            }
+          } 
+          
+          // add any new field  below
+          // Store in yearlyMetrics for this target year  -
             if (!current.yearlyMetrics[tyYear]) {
                     current.yearlyMetrics[tyYear] = {};
                 }   
                 
+                // Add any newly added field above( for this loop) to this array 
                 current.yearlyMetrics[tyYear] = {
                   ...current.yearlyMetrics[tyYear],
                   grossNonUnitFundReserves : grossNonUnitFundReserves,
                   grossNonUnitFundReservesIfrs17: grossNonUnitFundReservesIfrs17,
-  
-                }
+                  grossIfrs4NonUnitFundReserves :grossIfrs4NonUnitFundReserves,
+                  riReservesIfrs4: riReservesIfrs4,
+                  // after this
+            }
             } 
     });
   
@@ -1099,9 +1185,7 @@ function performExtraction(calculationInputs) {
             // calculate closing csm max 
             let closingCsmMax = current.month !== 0 ? openingCsmMax + csmVariableFeesMax - csmReleaseMax : 0;
   
-            
-            
-  
+          
             // ----------------------------RA related caluclations
             let openingRA = 0
             if( current.month !== ""){
@@ -1147,8 +1231,30 @@ function performExtraction(calculationInputs) {
                 ( openingCSM < 0 ? -1*( Math.min (csmVariableFees , -openingCSM)) 
                   : ( closingCSM < 0 ? - closingCSM: 0)
                 );
-  
-  
+                
+            // calculate 
+            let changeInIfrs4NetNonUnitreserves = 0
+            if( current.month !== ""){
+               changeInIfrs4NetNonUnitreserves = 
+               currentYearlyMetrics.grossIfrs4NonUnitFundReserves +
+               - prevYearlyMetrics.grossIfrs4NonUnitFundReserves 
+               + currentYearlyMetrics.riReservesIfrs4 - prevYearlyMetrics.riReservesIfrs4
+
+            }
+
+            let investmentIncomeNUFIfrs4 = 0
+            if ( current.month !==0) {
+              investmentIncomeNUFIfrs4 = 
+              (prevYearlyMetrics.grossIfrs4NonUnitFundReserves + prevYearlyMetrics.riReservesIfrs4 
+              - currentYearlyMetrics.nlCfsSm - current.riPremiums)* current.monthlyInterestRate
+            }
+
+            
+            // add new fields below 
+
+               /* let newValue = 0 */
+
+
             // Store in yearlyMetrics for this target year
             if (!current.yearlyMetrics[tyYear]) {
                     current.yearlyMetrics[tyYear] = {};
@@ -1179,7 +1285,9 @@ function performExtraction(calculationInputs) {
                   openingLossComponent : openingLossComponent,
                   closingLossComponent : closingLossComponent,
                   increaseInLosses : increaseInLosses,
-  
+                  changeInIfrs4NetNonUnitreserves: changeInIfrs4NetNonUnitreserves,
+                  investmentIncomeNUFIfrs4: investmentIncomeNUFIfrs4
+
                 }
             } 
     });
@@ -1227,6 +1335,11 @@ function performExtraction(calculationInputs) {
                 flatYearlyMetrics[`ClosingLossComponent_${year}`] = calc.yearlyMetrics[year]?.closingLossComponent || 0;
                 flatYearlyMetrics[`IncreaseInLosses_${year}`] = calc.yearlyMetrics[year]?.increaseInLosses || 0;
                 
+                flatYearlyMetrics[`GrossIfrs4NonUnitFundReserves_${year}`] = calc.yearlyMetrics[year]?.grossIfrs4NonUnitFundReserves || 0;
+                flatYearlyMetrics[`RiReservesIfrs4_${year}`] = calc.yearlyMetrics[year]?.riReservesIfrs4 || 0;
+
+                flatYearlyMetrics[`ChangeInIfrs4NetNonUnitreserves_${year}`] = calc.yearlyMetrics[year]?.changeInIfrs4NetNonUnitreserves || 0;
+                flatYearlyMetrics[`InvestmentIncomeNUFIfrs4_${year}`] = calc.yearlyMetrics[year]?.investmentIncomeNUFIfrs4 || 0;
             });
         }
   

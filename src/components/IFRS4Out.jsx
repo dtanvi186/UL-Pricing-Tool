@@ -108,10 +108,10 @@ const IFRS4Out = ({
     const vendorCommission = calculateFromDifferentFinancialRow('VendorCommission');
     const vendorFixedFee = calculateFromDifferentFinancialRow( 'VendorFixedFee');
     const changeInUnitReserves = calculateFromSameFinancialRow('ChangeInUnitFund');
-    const changeInNetNonUnitReserves = calculateFromDifferentFinancialRow('ChangeInNetNonUnitReserves')
+    const changeInNetNonUnitReserves = calculateFromDifferentFinancialRow('ChangeInIfrs4NetNonUnitreserves')
     const fundManagementExpense = calculateFromSameFinancialRow('InvestmentExpenses');
     const interestEarnedUnitFund = calculateFromSameFinancialRow('InvestmentIncomeUF');
-    const interestEarnedNonUnitFund = calculateFromDifferentFinancialRow('InvestmentIncomeNuf')
+    const interestEarnedNonUnitFund = calculateFromDifferentFinancialRow('InvestmentIncomeNUFIfrs4')
 
     // used for collapsed values
     const totalExpenses = initialCommission.map(( val , i) => {

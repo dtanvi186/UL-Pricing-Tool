@@ -16,7 +16,9 @@ const ExtractionTab = ({  extractionResults,   }) => {
         'CSMVariableFees', // Placeholder
         'CSMRelease', // Placeholder
         'ClosingCSM', // Placeholder
-        'OpeningLossComponent', 'ClosingLossComponent', 'IncreaseInLosses'
+        'OpeningLossComponent', 'ClosingLossComponent', 'IncreaseInLosses',
+        'GrossIfrs4NonUnitFundReserves',"ChangeInIfrs4NetNonUnitreserves",
+        "InvestmentIncomeNUFIfrs4", 'RiReservesIfrs4' 
       ];
 
   //create an array for headers 
@@ -49,6 +51,12 @@ const ExtractionTab = ({  extractionResults,   }) => {
     "Opening Loss Component",
     "Closing Loss Component",
     "Increase in Losses",
+     "Gross IFRS4 Non Unit Fund Reserves",
+    
+    "Change In IFRS4 Net Non Unit Reserves",
+    "Investment Income NUF IFRS4",
+    "Ri Reserves IFRS4",
+
   ];
 
   return headerTitles.map(title => (
